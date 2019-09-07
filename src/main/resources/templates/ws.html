@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>广播式 websocket</title>
+</head>
+<body onload="disconnect()">
+    <noscript><h2 style="color:#ff0000">浏览器不支持</h2> </noscript>
+    <div>
+        <div>
+            <button id="connect" onclick="connect();">连接</button>
+            <button id="disconnect" disabled="disabled" onclick="disconnect();">断开</button>
+        </div>
+        <div id="conversationDiv">
+            <label>输入你的名字</label><input type="text" id="name"/>
+            <button id="sendName" onclick="sendName();">发送</button>
+            <p id="response"></p>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+<!--js 方法-->
+<script type="text/javascript">
+    var client = null;
+
+    function setConnected(connected){
+        document.getElementById('connect').isDisabled=connected;
+        document.getElementById('disconnect').isDisabled=!connected;
+        document.getElementById('conversationDiv').style.visibility=connected?'visible':'hidden';
+        $('#response').html();
+    }
+
+    function connect() {
+        var socket = new SockJS('/endpoint');
+        client = Stomp.over(socket);
+        client.connect({},function (frame) {
+            setConnected(true);
+            console.log('connected: '+frame);
+            client.subscribe(JSON.parse(reponse.body).responseMessage);
+        });
+    }
+
+    function disconnect(){
+        if(client!=null){
+            client.disconnect();
+        }
+        setConnected(false);
+        console.log("disconnect!");
+    }
+
+    function sendName(){
+        var name = $('#name').val();
+        client.send("/hi",{},JSON.stringify({'name':name}));
+    }
+
+    function showResponse(message){
+        var response = $("#response");
+        response.html(message);
+    }
+</script>
+</body>
+</html>
